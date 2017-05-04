@@ -1,13 +1,16 @@
-FROM ruby:2.2.3
-MAINTAINER Chris Olstrom <chris@olstrom.com>
+FROM colstrom/ruby
 
-ENV RUBYGEMS_STORAGE /srv/gems
+COPY config.ru Gemfile lib/ /app/
+
+WORKDIR /app
+RUN apk-install ruby-dev gcc make musl-dev \
+    && gem install io-console \
+    && bundle install
+
+ENV RUBYGEMS_STORAGE ${RUBYGEMS_STORAGE:-'/srv'}
+
 VOLUME ${RUBYGEMS_STORAGE}
+
 EXPOSE 3000
 
-COPY config.ru Gemfile /srv/app/
-COPY lib/ /srv/app/lib/
-WORKDIR /srv/app
-RUN bundle pack
-
-CMD ["bundle", "exec", "reel-rack"]
+ENTRYPOINT ["reel-rack"]
