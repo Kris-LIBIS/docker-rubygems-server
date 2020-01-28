@@ -1,8 +1,7 @@
-source ENV.fetch 'RUBYGEMS_MIRROR', 'https://rubygems.org'
+source 'https://rubygems.org'
 
-gem 'celluloid', '~> 0.16.0'
 gem 'geminabox'
-gem 'octokit'
-gem 'redis'
-gem 'reel-rack'
-gem 'rubygems-mirror'
+# gem 'graphql-client'
+# gem 'github_api-v4-client'
+gem 'graphlient'
+gem 'puma'

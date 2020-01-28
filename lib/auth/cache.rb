@@ -1,34 +1,21 @@
-require 'openssl'
-require 'redis'
-require 'securerandom'
 
 module Auth
   # Caching methods for sessions.
   module Cache
-    def self.redis_url
-      @redis_host ||= ENV['REDIS_URL'] || ENV.fetch('REDIS_PORT', 'tcp://127.0.0.1:6379').sub('tcp://', 'redis://')
-    end
 
-    def self.redis
-      @redis ||= Redis.new(url: redis_url)
-    end
-
-    def self.seed
-      @seed ||= redis.get('rubygems:cache:seed') || SecureRandom.uuid.tap do |s|
-        redis.set 'rubygems:cache:seed', s
-      end
-    end
-
-    def self.session(token)
-      @session ||= "rubygems:sessions:#{OpenSSL::HMAC.hexdigest OpenSSL::Digest::SHA256.new, seed, token}"
-    end
+    Storage = {}
+    NullValue = Time.new(0)
 
     def self.add(token)
-      redis.set session(token), true, ex: 300
+      Storage[token] = Time.now + (ENV['CACHE_TTL'] || 600).to_i
+    end
+
+    def self.get(token)
+      Storage[token] || NullValue
     end
 
     def self.authorized?(token)
-      redis.exists session token
+      Time.now < get(token)
     end
   end
 end
